@@ -4,9 +4,8 @@
 deps() {
     echo "Cloning dependencies"
     if [ ! -d "clang" ]; then
-        wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-14.0.0_r50/clang-r510928.tar.gz -O "aosp-clang.tar.gz"
-        mkdir clang && tar -xf aosp-clang.tar.gz -C clang && rm -rf aosp-clang.tar.gz
-        KBUILD_COMPILER_STRING="Clang 18.0.0 r510928"
+        git clone https://gitlab.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r547379.git clang --depth=1
+        KBUILD_COMPILER_STRING="Clang 20.0.0 r547379"
         PATH="${PWD}/clang/bin:${PATH}"
     fi
     sudo apt install -y ccache
@@ -22,15 +21,15 @@ export CACHE
 export KBUILD_COMPILER_STRING
 ARCH=arm64
 export ARCH
-KBUILD_BUILD_HOST="neOliT"
+KBUILD_BUILD_HOST="Stormbreaker"
 export KBUILD_BUILD_HOST
-KBUILD_BUILD_USER="sarthakroy2002"
+KBUILD_BUILD_USER="EvilAnsh"
 export KBUILD_BUILD_USER
-DEVICE="Realme C3/Narzo 10A (Realme Monet)"
+DEVICE="Realme 7/Narzo 20 Pro/Narzo 30 4G"
 export DEVICE
-CODENAME="RMX2020"
+CODENAME="salaa"
 export CODENAME
-DEFCONFIG="RMX2020_defconfig"
+DEFCONFIG="salaa_defconfig"
 export DEFCONFIG
 COMMIT_HASH=$(git rev-parse --short HEAD)
 export COMMIT_HASH
@@ -75,7 +74,7 @@ error_sticker() {
 # Send Build Info
 sendinfo() {
     tg "
-• neOliT CI Build •
+• Stormbreaker CI Build •
 *Building on*: \`Github actions\`
 *Date*: \`${DATE}\`
 *Device*: \`${DEVICE} (${CODENAME})\`
@@ -124,13 +123,13 @@ compile() {
         exit 1
     fi
 
-    git clone --depth=1 https://github.com/sarthakroy2002/AnyKernel3.git AnyKernel
+    git clone --depth=1 https://github.com/kardebayan/AnyKernel3.git AnyKernel
     cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
 }
 # Zipping
 zipping() {
     cd AnyKernel || exit 1
-    zip -r9 neOliT-Test-OSS-"${BRANCH}"-RUI2-KERNEL-"${CODENAME}"-"${DATE}".zip ./*
+    zip -r9 Stormbreaker-Test-KSU-RUI3-KERNEL-"${CODENAME}"-"${DATE}".zip ./*
     cd ..
 }
 
