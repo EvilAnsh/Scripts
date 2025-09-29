@@ -3,15 +3,9 @@
 # Dependencies
 deps() {
     echo "Cloning dependencies"
-
     if [ ! -d "clang" ]; then
-        mkdir clang && cd clang
-        sudo apt install libelf-dev libarchive-tools
-        bash <(curl -s https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman) -S
-        bash <(curl -s https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman) --patch=glibc
-        ls
-        cd ..
-        KBUILD_COMPILER_STRING="Neutron Clang"
+        git clone https://gitlab.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r547379.git clang --depth=1
+        KBUILD_COMPILER_STRING="Clang 20.0.0 r547379"
         PATH="${PWD}/clang/bin:${PATH}"
     fi
     sudo apt install -y ccache
@@ -27,15 +21,15 @@ export CACHE
 export KBUILD_COMPILER_STRING
 ARCH=arm64
 export ARCH
-KBUILD_BUILD_HOST="neOliT"
+KBUILD_BUILD_HOST="Stormbreaker"
 export KBUILD_BUILD_HOST
-KBUILD_BUILD_USER="sarthakroy2002"
+KBUILD_BUILD_USER="EvilAnsh"
 export KBUILD_BUILD_USER
-DEVICE="Realme 6/7/Narzo 30 (Realme Wasabi/RM6785)"
+DEVICE="Realme 6/6i(Indian)/6s/Narzo"
 export DEVICE
-CODENAME="RM6785"
+CODENAME="nemo"
 export CODENAME
-DEFCONFIG="wasabi_defconfig"
+DEFCONFIG="nemo_defconfig"
 export DEFCONFIG
 COMMIT_HASH=$(git rev-parse --short HEAD)
 export COMMIT_HASH
@@ -63,30 +57,42 @@ tgs() {
         -F "caption=$2 | *MD5*: \`$MD5\`"
 }
 
-# sticker plox
+# Sticker
 sticker() {
     curl -s -X POST https://api.telegram.org/bot"${token}"/sendSticker \
-        -d sticker="CAACAgQAAxkBAAED3JFiApkFOuZg8zt0-WNrfEGwrvoRuAACAQoAAoEcoFINevKyLXEDhSME" \
+        -d sticker="CAACAgUAAxkBAAEKwfdlVQiHDyeU33wu71hiEWMeemBHhAACTAUAAgjXqFdZ0rpx15brLTME" \
         -d chat_id="${chat_id}"
 }
-# Send info plox channel
+
+# Error Sticker
+error_sticker() {
+    curl -s -X POST https://api.telegram.org/bot"${token}"/sendSticker \
+        -d sticker="CAACAgQAAxkBAAEKxCplVkvohpIHdto0Sq0FNnsjpiFN6AACQAoAAmfRmFBaWxhVsThPHDME" \
+        -d chat_id="${chat_id}"
+}
+
+# Send Build Info
 sendinfo() {
     tg "
-• neOliT CI Build •
+• Stormbreaker CI Build •
 *Building on*: \`Github actions\`
 *Date*: \`${DATE}\`
 *Device*: \`${DEVICE} (${CODENAME})\`
+*Branch*: \`$(git rev-parse --abbrev-ref HEAD)\`
 *Last Commit*: [${COMMIT_HASH}](${REPO}/commit/${COMMIT_HASH})
 *Compiler*: \`${KBUILD_COMPILER_STRING}\`
 *Build Status*: \`${STATUS}\`"
+    sticker
 }
+
 # Push kernel to channel
 push() {
     cd AnyKernel || exit 1
     ZIP=$(echo *.zip)
     tgs "${ZIP}" "Build took $((DIFF / 60)) minute(s) and $((DIFF % 60)) second(s). | For *${DEVICE} (${CODENAME})* | ${KBUILD_COMPILER_STRING}"
 }
-# Find Error
+
+# Catch Error
 finderr() {
     curl -s -X POST "https://api.telegram.org/bot$token/sendMessage" \
         -d chat_id="$chat_id" \
@@ -94,9 +100,11 @@ finderr() {
         -d "parse_mode=markdown" \
         -d sticker="CAACAgIAAxkBAAED3JViAplqY4fom_JEexpe31DcwVZ4ogAC1BAAAiHvsEs7bOVKQsl_OiME" \
         -d text="Build throw an error(s)"
+    error_sticker
     exit 1
 }
-# Compile plox
+
+# Compile
 compile() {
 
     if [ -d "out" ]; then
@@ -104,19 +112,10 @@ compile() {
     fi
 
     make O=out ARCH="${ARCH}" "${DEFCONFIG}"
-
     make -j"${PROCS}" O=out \
         ARCH=$ARCH \
         CC="clang" \
-        CROSS_COMPILE=aarch64-linux-gnu- \
-        CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
         LLVM=1 \
-        LD=ld.lld \
-        AR=llvm-ar \
-        NM=llvm-nm \
-        OBJCOPY=llvm-objcopy \
-        OBJDUMP=llvm-objdump \
-        STRIP=llvm-strip \
         CONFIG_NO_ERROR_ON_MISMATCH=y
 
     if ! [ -a "$IMAGE" ]; then
@@ -124,13 +123,13 @@ compile() {
         exit 1
     fi
 
-    git clone --depth=1 https://github.com/sarthakroy2002/AnyKernel3.git -b RMX2001 AnyKernel
+    git clone --depth=1 https://github.com/kardebayan/AnyKernel3.git AnyKernel
     cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
 }
 # Zipping
 zipping() {
     cd AnyKernel || exit 1
-    zip -r9 neOliT-Test-OSS-KERNEL-"${CODENAME}"-"${DATE}".zip ./*
+    zip -r9 Stormbreaker-Test-KSU-RUI2-KERNEL-"${CODENAME}"-"${DATE}".zip ./*
     cd ..
 }
 
