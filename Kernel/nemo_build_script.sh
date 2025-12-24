@@ -129,7 +129,7 @@ compile() {
 # Zipping
 zipping() {
     cd AnyKernel || exit 1
-    zip -r9 Stormbreaker-Test-KSU-RUI2-KERNEL-"${CODENAME}"-"${DATE}".zip ./*
+    zip -r9 Stormbreaker-LTS-Test-RUI2-KERNEL-"${CODENAME}"-"${DATE}".zip ./*
     cd ..
 }
 
