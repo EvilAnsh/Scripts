@@ -57,6 +57,14 @@ tgs() {
         -F "caption=$2 | *MD5*: \`$MD5\`"
 }
 
+# Send Document (for Error Logs)
+tg_send_doc() {
+    curl -fsSL -X POST -F document=@"$1" https://api.telegram.org/bot"${token}"/sendDocument \
+        -F "chat_id=${chat_id}" \
+        -F "parse_mode=Markdown" \
+        -F "caption=$2"
+}
+
 # Sticker
 sticker() {
     curl -s -X POST https://api.telegram.org/bot"${token}"/sendSticker \
@@ -98,8 +106,13 @@ finderr() {
         -d chat_id="$chat_id" \
         -d "disable_web_page_preview=true" \
         -d "parse_mode=markdown" \
-        -d sticker="CAACAgIAAxkBAAED3JViAplqY4fom_JEexpe31DcwVZ4ogAC1BAAAiHvsEs7bOVKQsl_OiME" \
-        -d text="Build throw an error(s)"
+        -d text="Build threw an error(s)"
+        
+    # Send the error log file
+    if [ -f "error.log" ]; then
+        tg_send_doc "error.log" "Build Error Log"
+    fi
+    
     error_sticker
     exit 1
 }
@@ -112,11 +125,13 @@ compile() {
     fi
 
     make O=out ARCH="${ARCH}" "${DEFCONFIG}"
+    
+    # Capture the output to error.log
     make -j"${PROCS}" O=out \
         ARCH=$ARCH \
         CC="clang" \
         LLVM=1 \
-        CONFIG_NO_ERROR_ON_MISMATCH=y
+        CONFIG_NO_ERROR_ON_MISMATCH=y 2>&1 | tee error.log
 
     if ! [ -a "$IMAGE" ]; then
         finderr
